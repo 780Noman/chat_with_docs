@@ -91,7 +91,7 @@ def main():
                 with st.spinner("Generating summary..."):
                     try:
                         full_text = "".join([doc.page_content for doc in st.session_state.vector_store.docstore._dict.values()])
-                        summary = get_summary_from_gemini(full_text)
+                        summary = get_summary_from_gemini(full_text, gemini_api_key)
                         st.session_state.chat_history.append(("assistant", f"Of course! Here is a summary of all documents:\n\n{summary}"))
                     except Exception as e:
                         st.error(f"Error generating summary: {e}")
@@ -121,9 +121,21 @@ def main():
 
             with st.spinner("Generating answer..."):
                 try:
+                    # Add a system prompt to guide the model's behavior
+                    prompt_template = """
+                    You are a helpful assistant for question-answering tasks. 
+                    Use the following pieces of retrieved context to answer the question. 
+                    If you don't know the answer, just say that you don't know. 
+                    Use five sentences maximum and keep the answer concise.
+                    Context: {context}
+                    Question: {question}
+                    Answer:
+                    """
+                    prompt = {"question": user_question, "context": st.session_state.vector_store.as_retriever()}
+
                     llm = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0.3, google_api_key=gemini_api_key)
                     chain = RetrievalQAWithSourcesChain.from_llm(llm=llm, retriever=st.session_state.vector_store.as_retriever())
-                    response = chain({"question": user_question}, return_only_outputs=True)
+                    response = chain(prompt, return_only_outputs=True)
                     
                     # Append the answer and sources to the history
                     st.session_state.chat_history.append(("assistant", response))

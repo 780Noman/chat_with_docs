@@ -62,7 +62,9 @@ def extract_text_from_url(url):
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+        # When deploying to Streamlit Cloud, Selenium gets configured automatically
+        # from the packages.txt file. We don't need to manually install the driver.
+        driver = webdriver.Chrome(options=chrome_options)
         
         driver.get(url)
         time.sleep(5)  # Wait for JavaScript to load
@@ -80,11 +82,21 @@ def extract_text_from_url(url):
         return f"Error fetching or parsing URL with Selenium: {e}"
 
 # Function to generate a summary from text using Gemini
-def get_summary_from_gemini(text):
+def get_summary_from_gemini(text, api_key):
     model = genai.GenerativeModel(MODEL_NAME)
-    prompt = f"""You are an expert in summarizing text. Please provide a concise summary of the following text:
-    {text} Summary:"""
-    response = model.generate_content(prompt)
+    safety_settings = {
+        "HARM_CATEGORY_HARASSMENT": "BLOCK_NONE",
+        "HARM_CATEGORY_HATE_SPEECH": "BLOCK_NONE",
+        "HARM_CATEGORY_SEXUALLY_EXPLICIT": "BLOCK_NONE",
+        "HARM_CATEGORY_DANGEROUS_CONTENT": "BLOCK_NONE",
+    }
+    prompt = f"""You are an expert in summarizing text. Please provide a concise summary of the following text. 
+    Be objective and stick to the facts presented in the document.
+    Text:
+    {text} 
+    
+    Summary:"""
+    response = model.generate_content(prompt, safety_settings=safety_settings)
     return response.text.strip()
 
 def analyze_text_with_spacy(text):
