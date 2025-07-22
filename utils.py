@@ -61,9 +61,15 @@ def extract_text_from_url(url):
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
-        
-        driver = webdriver.Chrome(options=chrome_options)
-        
+
+        # Check the operating system to determine how to initialize the driver
+        if os.name == 'nt':  # For local Windows development
+            from selenium.webdriver.chrome.service import Service as ChromeService
+            from webdriver_manager.chrome import ChromeDriverManager
+            driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+        else:  # For Streamlit Cloud (Linux)
+            driver = webdriver.Chrome(options=chrome_options)
+
         driver.get(url)
         time.sleep(5)  # Wait for JavaScript to load
         

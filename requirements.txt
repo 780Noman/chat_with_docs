@@ -5,7 +5,7 @@ docx2txt
 requests
 beautifulsoup4
 selenium
-
+webdriver-manager
 spacy
 langchain
 langchain-google-genai
