@@ -71,21 +71,7 @@ def main():
                 st.session_state.chat_history.append(("assistant", "The new information has been added. How can I help you?"))
                 st.rerun()
 
-        if st.session_state.vector_store:
-            if st.button("Analyze Documents"):
-                with st.spinner("Analyzing documents..."):
-                    full_text = "".join([doc.page_content for doc in st.session_state.vector_store.docstore._dict.values()])
-                    st.session_state.analysis = analyze_text_with_spacy(full_text)
-                    st.success("Analysis complete!")
-
-            if st.session_state.analysis:
-                st.subheader("Document Analysis")
-                entities, keywords = st.session_state.analysis
-                st.write("**Keywords:**", ", ".join(keywords))
-                with st.expander("Named Entities"):
-                    for entity_type, entity_list in entities.items():
-                        if entity_list:
-                            st.write(f"**{entity_type}:**", ", ".join(entity_list))
+        
 
             if st.button("Summarize All Documents"):
                 with st.spinner("Generating summary..."):

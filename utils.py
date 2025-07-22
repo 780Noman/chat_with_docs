@@ -103,46 +103,7 @@ def get_summary_from_gemini(text, api_key):
     response = model.generate_content(prompt, safety_settings=safety_settings)
     return response.text.strip()
 
-import subprocess
 
-def download_spacy_model(model="en_core_web_sm"):
-    """Downloads a spaCy model if it's not already installed."""
-    try:
-        spacy.load(model)
-    except OSError:
-        print(f"Downloading spaCy model '{model}'...")
-        subprocess.check_call(["python", "-m", "spacy", "download", model])
-        print(f"Model '{model}' downloaded successfully.")
-
-def analyze_text_with_spacy(text):
-    # Ensure the spaCy model is downloaded before trying to use it
-    download_spacy_model()
-    
-    nlp = spacy.load("en_core_web_sm")
-    doc = nlp(text)
-
-    entities = {
-        "Person": [],
-        "Organization": [],
-        "Location": [],
-        "Date": [],
-    }
-
-    for ent in doc.ents:
-        if ent.label_ == "PERSON" and ent.text not in entities["Person"]:
-            entities["Person"].append(ent.text)
-        elif ent.label_ == "ORG" and ent.text not in entities["Organization"]:
-            entities["Organization"].append(ent.text)
-        elif ent.label_ in ["GPE", "LOC"] and ent.text not in entities["Location"]:
-            entities["Location"].append(ent.text)
-        elif ent.label_ == "DATE" and ent.text not in entities["Date"]:
-            entities["Date"].append(ent.text)
-
-    # Keyword Extraction
-    keywords = [token.text for token in doc if not token.is_stop and not token.is_punct and token.pos_ in ["NOUN", "PROPN"]]
-    top_keywords = [item[0] for item in Counter(keywords).most_common(10)]
-
-    return entities, top_keywords
 
 def get_text_chunks(text, filename):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
