@@ -62,8 +62,6 @@ def extract_text_from_url(url):
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
         
-        # When deploying to Streamlit Cloud, Selenium gets configured automatically
-        # from the packages.txt file. We don't need to manually install the driver.
         driver = webdriver.Chrome(options=chrome_options)
         
         driver.get(url)
