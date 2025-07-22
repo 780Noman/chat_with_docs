@@ -103,7 +103,21 @@ def get_summary_from_gemini(text, api_key):
     response = model.generate_content(prompt, safety_settings=safety_settings)
     return response.text.strip()
 
+import subprocess
+
+def download_spacy_model(model="en_core_web_sm"):
+    """Downloads a spaCy model if it's not already installed."""
+    try:
+        spacy.load(model)
+    except OSError:
+        print(f"Downloading spaCy model '{model}'...")
+        subprocess.check_call(["python", "-m", "spacy", "download", model])
+        print(f"Model '{model}' downloaded successfully.")
+
 def analyze_text_with_spacy(text):
+    # Ensure the spaCy model is downloaded before trying to use it
+    download_spacy_model()
+    
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
 
