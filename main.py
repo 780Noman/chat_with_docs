@@ -121,21 +121,41 @@ def main():
 
             with st.spinner("Generating answer..."):
                 try:
-                    # Add a system prompt to guide the model's behavior
+                    # Define a clear prompt template to guide the model's behavior
+                    from langchain.prompts import PromptTemplate
                     prompt_template = """
-                    You are a helpful assistant for question-answering tasks. 
-                    Use the following pieces of retrieved context to answer the question. 
-                    If you don't know the answer, just say that you don't know. 
-                    Use five sentences maximum and keep the answer concise.
-                    Context: {context}
-                    Question: {question}
+                    You are a helpful assistant for question-answering tasks.
+                    Use the following pieces of retrieved context to answer the question.
+                    If you don't know the answer, just say that you don't know.
+                    Provide a concise answer, but include all relevant details from the context.
+
+                    Context:
+                    {summaries}
+
+                    Question:
+                    {question}
+
                     Answer:
                     """
-                    prompt = {"question": user_question, "context": st.session_state.vector_store.as_retriever()}
+                    
+                    # Create a PromptTemplate object
+                    PROMPT = PromptTemplate(
+                        template=prompt_template, input_variables=["summaries", "question"]
+                    )
 
+                    # Configure the LLM and the retrieval chain
                     llm = ChatGoogleGenerativeAI(model=MODEL_NAME, temperature=0.3, google_api_key=gemini_api_key)
-                    chain = RetrievalQAWithSourcesChain.from_llm(llm=llm, retriever=st.session_state.vector_store.as_retriever())
-                    response = chain(prompt, return_only_outputs=True)
+                    
+                    # Use from_chain_type to pass the custom prompt
+                    chain = RetrievalQAWithSourcesChain.from_chain_type(
+                        llm=llm,
+                        chain_type="stuff",
+                        retriever=st.session_state.vector_store.as_retriever(),
+                        chain_type_kwargs={"prompt": PROMPT},
+                    )
+                    
+                    # Call the chain with the user's question
+                    response = chain({"question": user_question}, return_only_outputs=True)
                     
                     # Append the answer and sources to the history
                     st.session_state.chat_history.append(("assistant", response))
