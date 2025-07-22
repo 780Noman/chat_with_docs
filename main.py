@@ -3,7 +3,7 @@ os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 import streamlit as st
 import google.generativeai as genai
-from utils import extract_text, get_summary_from_gemini, MODEL_NAME, extract_text_from_url, analyze_text_with_spacy, get_text_chunks, get_vector_store
+from utils import extract_text, get_summary_from_gemini, MODEL_NAME, extract_text_from_url, get_text_chunks, get_vector_store
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.chains import RetrievalQAWithSourcesChain
@@ -30,8 +30,7 @@ def main():
         st.session_state.processed_files = set()
     if "vector_store" not in st.session_state:
         st.session_state.vector_store = None
-    if "analysis" not in st.session_state:
-        st.session_state.analysis = None
+    
 
     with st.sidebar:
         st.subheader("Your documents")

@@ -4,18 +4,11 @@ import docx2txt
 import google.generativeai as genai
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import time
-import spacy
-from collections import Counter
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain.chains.question_answering import load_qa_chain
-from langchain.prompts import PromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.docstore.document import Document
 
 MODEL_NAME = 'models/gemini-2.0-flash-lite'
@@ -52,7 +45,6 @@ def extract_text_from_pdf(pdf_file):
     for page in pdf_reader.pages:
         text += page.extract_text()
     return text
-
 
 
 def extract_text_from_url(url):
@@ -103,8 +95,6 @@ def get_summary_from_gemini(text, api_key):
     response = model.generate_content(prompt, safety_settings=safety_settings)
     return response.text.strip()
 
-
-
 def get_text_chunks(text, filename):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     chunks = text_splitter.split_text(text)
@@ -114,4 +104,3 @@ def get_vector_store(text_chunks, api_key):
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=api_key)
     vector_store = FAISS.from_documents(text_chunks, embedding=embeddings)
     return vector_store
-
